@@ -6,13 +6,14 @@ const Circle = @import("./datatypes/circle.zig");
 const Sphere = @import("./datatypes/sphere.zig");
 const draw_circle = @import("./circle/circle.zig");
 const print_image = @import("./image/image.zig");
+const vector_calc = @import("./helpers/vectors.zig");
 
 // image parameters
 
 pub fn main() !void {
     const CAMERA_RIGHT = [_]i64{ 1, 0, 0 };
     const CAMERA_UP = [_]i64{ 0, 1, 0 };
-    const FOCAL_DISTANCE = 10;
+    const FOCAL_DISTANCE: i64 = 10;
     const CAMERA_POSITION = [_]i64{ 0, 0, -20 };
     const SPHERE_CENTRE = [_]i64{ 0, 0, 0 };
     const LENGTH: i64 = 64;
@@ -46,11 +47,19 @@ pub fn main() !void {
 
     // 3D
     const sphere = Sphere.Sphere{ .radius = RADIUS, .center = SPHERE_CENTRE };
-    _ = sphere;
-    _ = FOCAL_DISTANCE;
-    _ = CAMERA_POSITION;
     _ = CAMERA_RIGHT;
     _ = CAMERA_UP;
+
+    rayCollision(0, 0, LENGTH, HEIGHT, &sphere, &CAMERA_POSITION, FOCAL_DISTANCE);
 }
 
-pub fn calculateRay(image: *[][]u8, sphere: Sphere, camera_position: [3]u8, focal_distance: comptime_int) void {}
+pub fn rayCollision(x: i64, y: i64, length: i64, height: i64, sphere: *const Sphere.Sphere, camera_position: *const [3]i64, focal_distance: i64) void {
+    const direction = [_]i64{ -1 * @divExact(length, 2) + x, @divExact(height, 2) - y, focal_distance };
+    std.debug.print("direction {any}\n", .{direction});
+    const a = vector_calc.scalarProduct(&direction, &direction);
+    const w = vector_calc.multiplyNumber(&direction, 2);
+    const vm = vector_calc.subtractVector(camera_position, &sphere.center);
+    const b = vector_calc.scalarProduct(&w, &vm);
+    const c = vector_calc.scalarProduct(&vm, &vm) - sphere.radius * sphere.radius;
+    std.debug.print("a = {}, b = {}, c = {}", .{ a, b, c });
+}
