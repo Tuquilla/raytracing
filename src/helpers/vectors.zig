@@ -38,8 +38,10 @@ test "scalar product" {
     const right_vector = [_]i64{ 11, -4, 10 };
 
     const sum = scalarProduct(&left_vector, &right_vector);
+    const sum2 = scalarProduct(&left_vector, &left_vector);
 
     try std.testing.expectEqual(-70, sum);
+    try std.testing.expectEqual(133, sum2);
 }
 
 test "subtraction" {
