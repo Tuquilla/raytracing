@@ -4,11 +4,10 @@
 const std = @import("std");
 const Circle = @import("./datatypes/circle.zig");
 const Sphere = @import("./datatypes/sphere.zig");
-const draw_circle = @import("./circle/circle.zig");
+const draw_circle = @import("./geometry/circle.zig");
 const print_image = @import("./image/image.zig");
 const vector_calc = @import("./helpers/vectors.zig");
-
-// image parameters
+const draw_sphere = @import("./geometry/sphere.zig");
 
 pub fn main() !void {
     const CAMERA_RIGHT = [_]i64{ 1, 0, 0 };
@@ -19,6 +18,7 @@ pub fn main() !void {
     const LENGTH: i64 = 64;
     const HEIGHT: i64 = 48;
     const RADIUS: i64 = 5;
+    const COLOR_SPHERE_1: u32 = 0x00ff00;
     const HEADER_TYPE = "P6\n";
     const MAX_COLOR = "255\n";
     const circle = Circle.Circle{ .origin_x = LENGTH / 2, .origin_y = HEIGHT / 2, .radius = RADIUS };
@@ -27,11 +27,11 @@ pub fn main() !void {
     const allocator = gpa.allocator();
     defer _ = gpa.deinit();
 
-    var image_2D = try allocator.alloc([]u8, HEIGHT);
+    var image_2D = try allocator.alloc([]u32, HEIGHT);
     defer allocator.free(image_2D);
 
     for (image_2D) |*row| {
-        row.* = try allocator.alloc(u8, LENGTH);
+        row.* = try allocator.alloc(u32, LENGTH);
     }
     defer {
         for (image_2D) |row| {
@@ -46,61 +46,31 @@ pub fn main() !void {
     try print_image.drawImageAsPPM(&image_2D, LENGTH, HEIGHT, MAX_COLOR, HEADER_TYPE);
 
     // 3D
-    var image_3D = try allocator.alloc([]u8, HEIGHT);
+    // allocate memory for image
+    var image_3D = try allocator.alloc([]u32, HEIGHT);
     defer allocator.free(image_3D);
 
     for (image_3D) |*row| {
-        row.* = try allocator.alloc(u8, LENGTH);
+        row.* = try allocator.alloc(u32, LENGTH);
     }
     defer {
         for (image_3D) |row| {
             allocator.free(row);
         }
     }
+
+    // fill image with "."
     print_image.createImage(&image_3D);
 
-    const sphere = Sphere.Sphere{ .radius = RADIUS, .center = SPHERE_CENTRE };
+    // first sphere in image
+    const sphere = Sphere.Sphere{ .radius = RADIUS, .center = SPHERE_CENTRE, .color = COLOR_SPHERE_1 };
     _ = CAMERA_RIGHT;
     _ = CAMERA_UP;
 
-    for (image_3D, 0..) |*row, y| {
-        for (row.*, 0..) |_, x| {
-            if (ray(@as(i64, @intCast(x)), @as(i64, @intCast(y)), LENGTH, HEIGHT, &sphere, &CAMERA_POSITION, FOCAL_DISTANCE)) {
-                image_3D[y][x] = 'x';
-            }
-        }
-    }
-    print_image.drawImage(&image_3D);
+    // draw sphere in image
+    draw_sphere.drawSphere(&image_3D, LENGTH, HEIGHT, &sphere, &CAMERA_POSITION, FOCAL_DISTANCE);
+
+    // print image with green color
+    //print_image.drawImage(&image_3D);
     try print_image.drawImageAsPPM(&image_3D, LENGTH, HEIGHT, MAX_COLOR, HEADER_TYPE);
-    //const v = ray(64, 64, LENGTH, HEIGHT, &sphere, &CAMERA_POSITION, FOCAL_DISTANCE);
-    //std.debug.print("v: {}", .{v});
-}
-
-pub fn ray(x: i64, y: i64, length: i64, height: i64, sphere: *const Sphere.Sphere, camera_position: *const [3]i64, focal_distance: i64) bool {
-    const direction = [_]i64{ -1 * @divExact(length, 2) + x, @divExact(height, 2) - y, focal_distance };
-    //std.debug.print("direction {any}\n", .{direction});
-    const a = vector_calc.scalarProduct(&direction, &direction);
-    const w = vector_calc.multiplyNumber(&direction, 2);
-    const vm = vector_calc.subtractVector(camera_position, &sphere.center);
-    const b = vector_calc.scalarProduct(&w, &vm);
-    const c = vector_calc.scalarProduct(&vm, &vm) - std.math.pow(i64, sphere.radius, 2);
-    //std.debug.print("a = {}, b = {}, c = {}", .{ a, b, c });
-    if (rayCollision(a, b, c)) {
-        return true;
-    }
-    return false;
-}
-
-pub fn rayCollision(a: i64, b: i64, c: i64) bool {
-    if (intersect(a, b, c)) {
-        return true;
-    }
-    return false;
-}
-
-pub fn intersect(a: i64, b: i64, c: i64) bool {
-    if (std.math.pow(i64, b, 2) - 4 * a * c > 0) {
-        return true;
-    }
-    return false;
 }

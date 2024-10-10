@@ -1,14 +1,14 @@
 const std = @import("std");
 
-pub fn createImage(image: *[][]u8) void {
+pub fn createImage(image: *[][]u32) void {
     for (image.*) |row| {
         for (row) |*pixel| {
-            pixel.* = '.';
+            pixel.* = 0xffffff;
         }
     }
 }
 
-pub fn drawImage(image: *[][]u8) void {
+pub fn drawImage(image: *[][]u32) void {
     for (image.*) |row| {
         for (row) |*pixel| {
             std.debug.print("{c}", .{pixel.*});
@@ -17,7 +17,7 @@ pub fn drawImage(image: *[][]u8) void {
     }
 }
 
-pub fn drawImageAsPPM(image: *[][]u8, length: i64, height: i64, max_color: *const [4:0]u8, header: *const [3:0]u8) !void {
+pub fn drawImageAsPPM(image: *[][]u32, length: i64, height: i64, max_color: *const [4:0]u8, header: *const [3:0]u8) !void {
     const file = try std.fs.cwd().createFile(
         "./files/image_circle.ppm",
         .{ .read = true },
@@ -32,13 +32,7 @@ pub fn drawImageAsPPM(image: *[][]u8, length: i64, height: i64, max_color: *cons
     try file.writeAll(max_color);
     for (image.*) |row| {
         for (row) |*pixel| {
-            if (pixel.* == 'x') {
-                const bytes: [3]u8 = .{ 0, 255, 0 };
-                try file.writeAll(&bytes);
-            } else {
-                const bytes: [3]u8 = .{ 255, 255, 255 };
-                try file.writeAll(&bytes);
-            }
+            try file.writeAll(hexToRgb(pixel.*));
         }
     }
 }
@@ -60,4 +54,13 @@ pub fn drawImageAsPPMTest() !void {
     try file.writeAll(header);
     try file.writeAll(max_color);
     try file.writeAll(image);
+}
+
+fn hexToRgb(hex: u32) *const [3]u8 {
+    const r = @as(u8, @intCast((hex >> 16) & 0xFF));
+    const g = @as(u8, @intCast((hex >> 8) & 0xFF));
+    const b = @as(u8, @intCast(hex & 0xFF));
+
+    const rgb = [_]u8{ r, g, b };
+    return &rgb;
 }
