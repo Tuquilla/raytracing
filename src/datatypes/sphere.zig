@@ -1,1 +1,1 @@
-pub const Sphere = struct { radius: i64, center: [3]i64, color: u32 };
+pub const Sphere = struct { radius: f64, center: [3]f64, color: u32 };

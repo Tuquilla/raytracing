@@ -56,11 +56,15 @@ pub fn drawImageAsPPMTest() !void {
     try file.writeAll(image);
 }
 
-fn hexToRgb(hex: u32) *const [3]u8 {
+pub fn hexToRgb(hex: u32) *[3]u8 {
     const r = @as(u8, @intCast((hex >> 16) & 0xFF));
     const g = @as(u8, @intCast((hex >> 8) & 0xFF));
     const b = @as(u8, @intCast(hex & 0xFF));
 
-    const rgb = [_]u8{ r, g, b };
+    var rgb = [_]u8{ r, g, b };
     return &rgb;
+}
+
+pub fn rgbToHex(r: u8, g: u8, b: u8) u32 {
+    return (@as(u32, r) << 16) | (@as(u32, g) << 8) | @as(u32, b);
 }

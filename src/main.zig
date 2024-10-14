@@ -10,21 +10,22 @@ const vector_calc = @import("./helpers/vectors.zig");
 const draw_sphere = @import("./geometry/sphere.zig");
 
 pub fn main() !void {
-    const CAMERA_RIGHT = [_]i64{ 1, 0, 0 };
-    const CAMERA_UP = [_]i64{ 0, 1, 0 };
-    const FOCAL_DISTANCE: i64 = 10;
-    const CAMERA_POSITION = [_]i64{ 0, 0, -20 };
-    const SPHERE_CENTRE_1 = [_]i64{ 0, 0, 0 };
-    const SPHERE_CENTRE_2 = [_]i64{ 2, 2, 2 };
-    const SPHERE_CENTRE_3 = [_]i64{ -4, -4, -2 };
-    const LENGTH: i64 = 64;
-    const HEIGHT: i64 = 48;
-    const RADIUS_1: i64 = 5;
-    const RADIUS_2: i64 = 5;
-    const RADIUS_3: i64 = 5;
+    const LIGHT_SOURCE = [_]f64{ 0, 100, 0 };
+    const CAMERA_RIGHT = [_]f64{ 1, 0, 0 };
+    const CAMERA_UP = [_]f64{ 0, 1, 0 };
+    const FOCAL_DISTANCE: f64 = 80;
+    const CAMERA_POSITION = [_]f64{ 0, 0, -80 };
+    const SPHERE_CENTRE_1 = [_]f64{ 0, 0, 0 };
+    const SPHERE_CENTRE_2 = [_]f64{ 40, 40, 40 };
+    const SPHERE_CENTRE_3 = [_]f64{ 80, 80, 80 };
+    const LENGTH: f64 = 256;
+    const HEIGHT: f64 = 192;
+    const RADIUS_1: f64 = 40;
+    const RADIUS_2: f64 = 40;
+    const RADIUS_3: f64 = 40;
     const COLOR_SPHERE_1: u32 = 0x00ff00;
     const COLOR_SPHERE_2: u32 = 0x0D1CEE;
-    const COLOR_SPHERE_3: u32 = 0xFFFF00;
+    const COLOR_SPHERE_3: u32 = 0xFF0000;
     const HEADER_TYPE = "P6\n";
     const MAX_COLOR = "255\n";
     const circle = Circle.Circle{ .origin_x = LENGTH / 2, .origin_y = HEIGHT / 2, .radius = RADIUS_1 };
@@ -85,7 +86,7 @@ pub fn main() !void {
     // draw sphere in image
     //draw_sphere.drawSphere(&image_3D, LENGTH, HEIGHT, &sphere_1, &CAMERA_POSITION, FOCAL_DISTANCE);
     //draw_sphere.drawSphere(&image_3D, LENGTH, HEIGHT, &sphere_2, &CAMERA_POSITION, FOCAL_DISTANCE);
-    draw_sphere.drawSphere2(&image_3D, LENGTH, HEIGHT, &spheres, &CAMERA_POSITION, FOCAL_DISTANCE);
+    draw_sphere.drawSphere2(&image_3D, LENGTH, HEIGHT, &spheres, &CAMERA_POSITION, FOCAL_DISTANCE, &LIGHT_SOURCE);
 
     try print_image.drawImageAsPPM(&image_3D, LENGTH, HEIGHT, MAX_COLOR, HEADER_TYPE);
 }
