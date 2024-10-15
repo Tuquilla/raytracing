@@ -35,13 +35,24 @@ fn ray2(x: f64, y: f64, length: f64, height: f64, spheres: *std.ArrayList(Sphere
         const c = vector_calc.scalarProduct(&vm, &vm) - std.math.pow(f64, sphere.radius, 2);
         const intersection = intersect2(a, b, c);
         if (intersection < smallest_t and intersection > 0.0) {
-            smallest_t = intersect2(a, b, c);
+            smallest_t = intersection;
             sphere_index = @as(i64, @intCast(index));
             const entry_coordinates = entryPointCoordinates(smallest_t, &direction, camera_position);
-            const normal_vector = normalVector(&sphere, &entry_coordinates);
-            const light_intensity = lightIntensity(light_source, &entry_coordinates);
-            color_intensity = @abs(vector_calc.scalarProduct(&light_intensity, &normal_vector));
-            //std.debug.print("normal vector: {any}", .{normal_vector});
+
+            const direction_p = [_]f64{ entry_coordinates[0] - light_source[0], entry_coordinates[1] - light_source[1], entry_coordinates[2] - light_source[2] };
+            // Check, ob Oberfläche der Lichtquelle direkt ausgesetzt ist
+            const t_upper = direction_p[0] * entry_coordinates[0] + direction_p[1] * entry_coordinates[1] + direction_p[2] * entry_coordinates[2];
+            const t_lower = std.math.pow(f64, direction_p[0], 2) + std.math.pow(f64, direction_p[1], 2) + std.math.pow(f64, direction_p[2], 2);
+            const intersection_p = t_upper / t_lower;
+            // Fall Licht durch eine Sphäre (auch die eigene) blockiert ist, ist der Wert > 0
+            if (intersection_p >= 0.0) {
+                color_intensity = 0.0;
+            } else {
+                const normal_vector = normalVector(&sphere, &entry_coordinates);
+                const light_intensity = lightIntensity(light_source, &entry_coordinates);
+                color_intensity = @abs(vector_calc.scalarProduct(&light_intensity, &normal_vector));
+                //std.debug.print("normal vector: {any}", .{normal_vector});
+            }
         }
         index += 1;
     }
@@ -54,20 +65,18 @@ fn intersect2(a: f64, b: f64, c: f64) f64 {
     var t1: f64 = 0;
     var t2: f64 = 0;
     const diskriminante = std.math.pow(f64, b, 2) - 4 * a * c;
-    if (diskriminante > 0) {
-        const t1_upper: f64 = -b - std.math.sqrt(diskriminante);
-        const t2_upper: f64 = -b + std.math.sqrt(diskriminante);
-        const lower: f64 = 2 * a;
-        t1 = t1_upper / lower;
-        t2 = t2_upper / lower;
-        // smallest t is the closest entry point of a ray into the objective
-        if (t1 < t2) {
-            return t1;
-        } else {
-            return t2;
-        }
+    //std.debug.print("Diskriminante: {}\n", .{diskriminante});
+    const t1_upper: f64 = -b - std.math.sqrt(diskriminante);
+    const t2_upper: f64 = -b + std.math.sqrt(diskriminante);
+    const lower: f64 = 2 * a;
+    t1 = t1_upper / lower;
+    t2 = t2_upper / lower;
+    // smallest t is the closest entry point of a ray into the objective
+    if (t1 < t2) {
+        return t1;
+    } else {
+        return t2;
     }
-    return t1;
 }
 
 fn entryPointCoordinates(t: f64, direction: *const [3]f64, camera_position: *const [3]f64) [3]f64 {
@@ -89,7 +98,6 @@ fn normalVector(sphere: *const Sphere.Sphere, entry_coordinates: *const [3]f64) 
     for (normal_vector, 0..) |_, index| {
         normal_vector[index] = normal_vector[index] / sum;
     }
-
     return normal_vector;
 }
 
