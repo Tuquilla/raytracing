@@ -40,20 +40,39 @@ fn ray2(x: f64, y: f64, length: f64, height: f64, spheres: *std.ArrayList(Sphere
             sphere_index = @as(i64, @intCast(index));
             const entry_coordinates = entryPointCoordinates(smallest_t, &direction, camera_position);
 
-            const direction_p = [_]f64{ entry_coordinates[0] - light_source[0], entry_coordinates[1] - light_source[1], entry_coordinates[2] - light_source[2] };
-            const a_test = vector_calc.scalarProduct(&direction_p, &direction_p);
-            const w_test = vector_calc.multiplyNumber(&direction_p, 2);
-            const vm_test = vector_calc.subtractVector(&entry_coordinates, &sphere.center);
-            const b_test = vector_calc.scalarProduct(&w_test, &vm_test);
-            const c_test = vector_calc.scalarProduct(&vm_test, &vm_test) - std.math.pow(f64, sphere.radius, 2);
-            const intersection_p_vector = intersect3(a_test, b_test, c_test);
-            if (std.math.round(intersection_p_vector[0] * 1000) / 1000 < 0.0 or std.math.round(intersection_p_vector[1] * 1000) / 1000 < 0.0) {
-                color_intensity = 0.0;
-            } else {
-                const normal_vector = normalVector(&sphere, &entry_coordinates);
-                const light_intensity = lightIntensity(light_source, &entry_coordinates);
-                color_intensity = straightnessOfLight(&light_intensity, &normal_vector);
+            //check if there is an intersection between light and spheres
+            for (spheres.items) |inner_sphere| {
+                const direction_p = [_]f64{ entry_coordinates[0] - light_source[0], entry_coordinates[1] - light_source[1], entry_coordinates[2] - light_source[2] };
+                const a_test = vector_calc.scalarProduct(&direction_p, &direction_p);
+                const w_test = vector_calc.multiplyNumber(&direction_p, 2);
+                const vm_test = vector_calc.subtractVector(&entry_coordinates, &inner_sphere.center);
+                const b_test = vector_calc.scalarProduct(&w_test, &vm_test);
+                const c_test = vector_calc.scalarProduct(&vm_test, &vm_test) - std.math.pow(f64, inner_sphere.radius, 2);
+                const intersection_p_vector = intersect3(a_test, b_test, c_test);
+                if (std.math.round(intersection_p_vector[0] * 1000) / 1000 < 0.0 or std.math.round(intersection_p_vector[1] * 1000) / 1000 < 0.0) {
+                    color_intensity = 0.0;
+                    break;
+                } else {
+                    const normal_vector = normalVector(&sphere, &entry_coordinates);
+                    const light_intensity = lightIntensity(light_source, &entry_coordinates);
+                    color_intensity = straightnessOfLight(&light_intensity, &normal_vector);
+                }
             }
+
+            // const direction_p = [_]f64{ entry_coordinates[0] - light_source[0], entry_coordinates[1] - light_source[1], entry_coordinates[2] - light_source[2] };
+            // const a_test = vector_calc.scalarProduct(&direction_p, &direction_p);
+            // const w_test = vector_calc.multiplyNumber(&direction_p, 2);
+            // const vm_test = vector_calc.subtractVector(&entry_coordinates, &sphere.center);
+            // const b_test = vector_calc.scalarProduct(&w_test, &vm_test);
+            // const c_test = vector_calc.scalarProduct(&vm_test, &vm_test) - std.math.pow(f64, sphere.radius, 2);
+            // const intersection_p_vector = intersect3(a_test, b_test, c_test);
+            // if (std.math.round(intersection_p_vector[0] * 1000) / 1000 < 0.0 or std.math.round(intersection_p_vector[1] * 1000) / 1000 < 0.0) {
+            //     color_intensity = 0.0;
+            // } else {
+            //     const normal_vector = normalVector(&sphere, &entry_coordinates);
+            //     const light_intensity = lightIntensity(light_source, &entry_coordinates);
+            //     color_intensity = straightnessOfLight(&light_intensity, &normal_vector);
+            // }
         }
         index += 1;
     }
@@ -92,7 +111,7 @@ fn intersect3(a: f64, b: f64, c: f64) [2]f64 {
     var t2: f64 = 0;
     const diskriminante = std.math.pow(f64, b, 2) - 4 * a * c;
     if (diskriminante < 0.0) {
-        const results = [_]f64{ -1.0, -1.0 };
+        const results = [_]f64{ 0, 0 };
         return results;
     }
     const t1_upper: f64 = -b - std.math.sqrt(diskriminante);
