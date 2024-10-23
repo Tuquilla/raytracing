@@ -10,11 +10,11 @@ const vector_calc = @import("./helpers/vectors.zig");
 const draw_sphere = @import("./geometry/sphere.zig");
 
 pub fn main() !void {
-    const LIGHT_SOURCE = [_]f64{ -100, 100, 0 };
+    const LIGHT_SOURCE = [_]f64{ 0, 0, -45 };
     const CAMERA_RIGHT = [_]f64{ 1, 0, 0 };
     const CAMERA_UP = [_]f64{ 0, 1, 0 };
     const FOCAL_DISTANCE: f64 = 80;
-    const CAMERA_POSITION = [_]f64{ 0, 0, -80 };
+    const CAMERA_POSITION = [_]f64{ 0, 0, -100 };
     const SPHERE_CENTRE_1 = [_]f64{ 0, 0, 0 };
     const SPHERE_CENTRE_2 = [_]f64{ 40, 40, 40 };
     const SPHERE_CENTRE_3 = [_]f64{ 80, 80, 80 };
@@ -84,8 +84,6 @@ pub fn main() !void {
     try spheres.append(sphere_3);
 
     // draw sphere in image
-    //draw_sphere.drawSphere(&image_3D, LENGTH, HEIGHT, &sphere_1, &CAMERA_POSITION, FOCAL_DISTANCE);
-    //draw_sphere.drawSphere(&image_3D, LENGTH, HEIGHT, &sphere_2, &CAMERA_POSITION, FOCAL_DISTANCE);
     draw_sphere.drawSphere2(&image_3D, LENGTH, HEIGHT, &spheres, &CAMERA_POSITION, FOCAL_DISTANCE, &LIGHT_SOURCE);
 
     try print_image.drawImageAsPPM(&image_3D, LENGTH, HEIGHT, MAX_COLOR, HEADER_TYPE);
