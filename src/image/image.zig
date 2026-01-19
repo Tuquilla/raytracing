@@ -19,7 +19,7 @@ pub fn drawImage(image: *[][]u32) void {
 
 pub fn drawImageAsPPM(image: *[][]u32, length: i64, height: i64, max_color: *const [4:0]u8, header: *const [3:0]u8) !void {
     const file = try std.fs.cwd().createFile(
-        "./files/image_circle.ppm",
+        "./image_circle.ppm",
         .{ .read = true },
     );
     defer file.close();

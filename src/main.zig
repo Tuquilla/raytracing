@@ -10,7 +10,7 @@ const vector_calc = @import("./helpers/vectors.zig");
 const draw_sphere = @import("./geometry/sphere.zig");
 
 pub fn main() !void {
-    const LIGHT_SOURCE = [_]f64{ 0, 100, 0 };
+    const LIGHT_SOURCE = [_]f64{ -50, 100, -50 };
     const CAMERA_RIGHT = [_]f64{ 1, 0, 0 };
     const CAMERA_UP = [_]f64{ 0, 1, 0 };
     const FOCAL_DISTANCE: f64 = 80;
